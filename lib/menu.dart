@@ -4,9 +4,9 @@ class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
 
   final List<ItemHomepage> items = const [
-    ItemHomepage('Lihat Proyek', Icons.folder),
-    ItemHomepage('Tambah Proyek', Icons.add_circle),
-    ItemHomepage('Logout', Icons.logout),
+    ItemHomepage('Lihat Proyek', Icons.folder, Color(0xFF355C7D)),
+    ItemHomepage('Tambah Proyek', Icons.add_circle, Color(0xFF387454)),
+    ItemHomepage('Logout', Icons.logout, Color(0xFFA33B3B)),
   ];
 
   @override
@@ -35,7 +35,7 @@ class MyHomePage extends StatelessWidget {
                     child: InfoCard(title: 'Nama', content: 'Nadya Sekar'),
                   ),
                   Expanded(
-                    child: InfoCard(title: 'Kelas', content: 'D'),
+                    child: InfoCard(title: 'Kelas', content: 'PBP D'),
                   ),
                 ],
               ),
@@ -92,8 +92,9 @@ class InfoCard extends StatelessWidget {
 class ItemHomepage {
   final String name;
   final IconData icon;
+  final Color color;
 
-  const ItemHomepage(this.name, this.icon);
+  const ItemHomepage(this.name, this.icon, this.color);
 }
 
 class ItemCard extends StatelessWidget {
@@ -104,7 +105,7 @@ class ItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Theme.of(context).colorScheme.secondary,
+      color: item.color,
       borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
