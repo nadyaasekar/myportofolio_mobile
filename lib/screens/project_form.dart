@@ -29,9 +29,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
     return InputDecoration(
       labelText: label,
       hintText: hint,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(5),
-      ),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
     );
   }
 

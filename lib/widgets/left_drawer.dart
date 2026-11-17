@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:myportofolio_mobile/menu.dart';
-import 'package:myportofolio_mobile/project_form.dart';
+import 'package:myportofolio_mobile/screens/menu.dart';
+import 'package:myportofolio_mobile/screens/project_form.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -29,10 +29,7 @@ class LeftDrawer extends StatelessWidget {
                 SizedBox(height: 10),
                 Text(
                   'Explore personal projects and experiences!',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 15, color: Colors.white),
                 ),
               ],
             ),
@@ -44,9 +41,7 @@ class LeftDrawer extends StatelessWidget {
               Navigator.pop(context);
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const MyHomePage(),
-                ),
+                MaterialPageRoute(builder: (context) => const MyHomePage()),
               );
             },
           ),
