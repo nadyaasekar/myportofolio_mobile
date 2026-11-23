@@ -85,9 +85,20 @@ Melanjutkan proyek tutorial dengan menambahkan atribut warna pada ItemHomepage a
 
 6. hot reload menerapkan perubahan kode dan membangun ulang tampilan sambil mempertahankan state aplikasi. hot restart memulai ulang aplikasi Dart sehingga state kembali ke kondisi awal. hot reload cocok untuk perubahan tampilan, sedangkan hot restart diperlukan untuk menjalankan ulang inisialisasi seperti `main` atau `initState`. perubahan kode native atau konfigurasi platform tertentu memerlukan full restart, yaitu menghentikan lalu menjalankan aplikasi kembali.
 
+### Tugas 8
+
+1. `Navigator.push()` menambahkan halaman baru di atas tumpukan navigasi, sedangkan `pushReplacement()` mengganti halaman aktif. `Navigator.pop()` menghapus halaman paling atas sehingga kembali ke halaman sebelumnya, atau menutup drawer/dialog yang sedang terbuka. saya menggunakan `push()` untuk membuka form Education dari kartu aksi. pada drawer, opsi Home menutup drawer lalu menggunakan `pushReplacement()` untuk menampilkan halaman utama.
+
+2. `Scaffold` menyediakan kerangka halaman, `AppBar` menampilkan judul, dan `Drawer` menyediakan menu navigasi yang sama antarhalaman. saya memakai kembali `LeftDrawer` pada halaman utama dan formulir agar navigasinya konsisten. warna AppBar pada kedua halaman juga diambil dari `Theme.of(context).colorScheme.primary`, sehingga mengikuti tema portofolio yang sama.
+
+3. saya menggunakan `Column` agar input tersusun vertikal dan mudah diisi secara berurutan. `Padding` memberi jarak dari tepi layar, sedangkan `SizedBox` memisahkan setiap input. `SingleChildScrollView` memungkinkan formulir digulir ketika layar sempit atau papan ketik tampil, sehingga input dan tombol Simpan tetap dapat dijangkau.
+
+4. `GlobalKey<FormState>` digunakan untuk mengakses kondisi form. saat Simpan ditekan, `validate()` menjalankan seluruh `validator`, dan dialog hanya ditampilkan jika semua input valid. contohnya, tahun selesai `2019` ditolak jika tahun mulai `2020`. memilih keyboard angka saja belum cukup karena pengguna masih bisa memasukkan nilai yang tidak sesuai aturan, termasuk melalui paste, sehingga validasi tetap diperlukan.
+
+
 ## Penggunaan AI
 
-Saya menggunakan ChatGPT/Codex untuk membantu memahami widget Flutter, menyusun contoh kode, menangani kendala instalasi, dan membuat draf dokumentasi serta pengujian.
+## Keseluruhan : 
 
 Strategi prompting yang saya gunakan adalah meminta penjelasan dan perubahan secara bertahap, lalu memberikan potongan kode, screenshot, atau output terminal agar saran sesuai dengan kondisi proyek.
 
@@ -101,4 +112,13 @@ Bagian yang dibantu AI mencakup penyusunan InfoCard dan ItemCard, penambahan atr
 
 AI memiliki keterbatasan dalam memastikan kondisi perangkat dan menafsirkan kebutuhan tugas. Contohnya, AI sempat mengarahkan pengujian emulator tanpa langsung menjelaskan bahwa menjalankan emulator bersifat opsional. Setelah memeriksa kembali tutorial, pengujian aplikasi dilanjutkan melalui Chrome.
 
+## Tugas 7
+Saya menggunakan ChatGPT/Codex untuk membantu memahami widget Flutter, menyusun contoh kode, menangani kendala instalasi, dan membuat draf dokumentasi serta pengujian.
+
 Saya menerapkan perubahan secara manual, mengisi kelas D, menjalankan aplikasi, serta memeriksa hasil analyzer dan pengujian. Saran AI tetap perlu dicocokkan dengan instruksi tugas dan hasil aktual proyek.
+
+
+## Tugas 8
+Pada Tugas 8, saya menggunakan ChatGPT/Codex untuk membantu menyusun form Education berdasarkan model Django, membuat validasi input, menghubungkan navigasi kartu dan drawer, serta menyusun draf refleksi. Saya memberikan instruksi tugas dan kondisi kode sebagai konteks, lalu meminta perubahan bertahap beserta penjelasannya.
+
+Saran AI perlu diperiksa karena dapat menambahkan aturan di luar model. Contohnya, batas tahun mulai dari 1900 sampai tahun berjalan dan penggunaan “Sekarang” untuk pendidikan yang belum selesai merupakan aturan tambahan pada form Flutter, bukan aturan yang sudah ada di model Django. Saya juga membedakan saran dokumentasi pengujian dari bagian README yang memang diwajibkan tugas.
