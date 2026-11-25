@@ -1,140 +1,208 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:provider/provider.dart';
+
 import 'package:myportofolio_mobile/main.dart';
+import 'package:myportofolio_mobile/models/experience.dart';
+import 'package:myportofolio_mobile/screens/experience_detail_screen.dart';
+import 'package:myportofolio_mobile/screens/experience_form.dart';
+import 'package:myportofolio_mobile/screens/login_screen.dart';
+import 'package:myportofolio_mobile/services/api_client.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
+
+const sampleExperience = {
+  'id': 'test-experience',
+  'title': 'Mentor Fasilkom',
+  'description': 'Mendampingi peserta kegiatan.',
+  'category': 'volunteer',
+  'category_display': 'Volunteer',
+  'thumbnail': null,
+  'started_at': '2026-01-01',
+  'ended_at': null,
+  'is_ongoing': true,
+  'star_count': 2,
+  'is_starred': false,
+  'starred_by_names': '',
+};
+
+Widget buildTestApp(ApiClient api) {
+  return MultiProvider(
+    providers: [
+      Provider<ApiClient>.value(value: api),
+      ChangeNotifierProvider<AuthState>(create: (_) => AuthState(api)),
+    ],
+    child: const MyApp(),
+  );
+}
+
+Future<void> tapText(WidgetTester tester, String text) async {
+  final target = find.text(text);
+  await tester.ensureVisible(target);
+  await tester.pumpAndSettle();
+  await tester.tap(target);
+  await tester.pumpAndSettle();
+}
 
 void main() {
-  testWidgets('Halaman utama menampilkan identitas dan menu', (tester) async {
-    await tester.pumpWidget(const MyApp());
+  late ApiClient api;
+
+  setUp(() {
+    api = ApiClient(
+      client: MockClient((request) async {
+        if (request.method == 'GET' &&
+            request.url.path == '/api/v1/experiences/') {
+          return http.Response(
+            jsonEncode([sampleExperience]),
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        }
+
+        return http.Response('{"detail":"Not found"}', 404);
+      }),
+    );
+  });
+
+  tearDown(() {
+    api.close();
+  });
+
+  testWidgets('Home menampilkan identitas dan menu terbaru', (tester) async {
+    await tester.pumpWidget(buildTestApp(api));
 
     expect(find.text('NPM'), findsOneWidget);
     expect(find.text('Nama'), findsOneWidget);
     expect(find.text('Kelas'), findsOneWidget);
-    expect(find.text('Lihat Proyek'), findsOneWidget);
-    expect(find.text('Tambah Proyek'), findsOneWidget);
+    expect(find.text('Lihat Experience'), findsOneWidget);
+    expect(find.text('Tambah Experience'), findsOneWidget);
+    expect(find.text('Tambah Education'), findsOneWidget);
     expect(find.text('Logout'), findsOneWidget);
   });
 
-  for (final menu in ['Lihat Proyek', 'Logout']) {
-    testWidgets('Tombol $menu menampilkan SnackBar', (tester) async {
-      await tester.pumpWidget(const MyApp());
+  testWidgets('Pengunjung bisa membuka daftar dan detail', (tester) async {
+    await tester.pumpWidget(buildTestApp(api));
 
-      final tombol = find.text(menu);
-      await tester.ensureVisible(tombol);
-      await tester.tap(tombol);
-      await tester.pumpAndSettle();
+    await tapText(tester, 'Lihat Experience');
 
-      expect(find.text('Kamu telah menekan tombol $menu!'), findsOneWidget);
-    });
-  }
+    expect(find.text('Mentor Fasilkom'), findsOneWidget);
+    expect(find.byType(LoginScreen), findsNothing);
 
-  testWidgets('Tambah Proyek membuka form dan bisa kembali', (tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tapText(tester, 'Mentor Fasilkom');
 
-    final tombol = find.text('Tambah Proyek');
-    await tester.ensureVisible(tombol);
-    await tester.tap(tombol);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Add Project Form'), findsOneWidget);
-
-    // Menyimulasikan navigasi kembali dari sistem.
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-
-    expect(find.text('Welcome to MyPortfolio!'), findsOneWidget);
+    expect(find.byType(ExperienceDetailScreen), findsOneWidget);
+    expect(find.text('Mendampingi peserta kegiatan.'), findsOneWidget);
+    expect(find.text('★ 2 star'), findsOneWidget);
   });
 
-  testWidgets('Drawer dapat membuka form dan kembali ke Home', (tester) async {
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Tambah Experience meminta login dan memvalidasi isian', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildTestApp(api));
 
-    await tester.tap(find.byIcon(Icons.menu).first);
-    await tester.pumpAndSettle();
+    await tapText(tester, 'Tambah Experience');
 
-    await tester.tap(find.text('Add Project'));
-    await tester.pumpAndSettle();
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(ExperienceFormPage), findsNothing);
 
-    expect(find.text('Add Project Form'), findsOneWidget);
-
-    await tester.tap(find.byIcon(Icons.menu).first);
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Home'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Welcome to MyPortfolio!'), findsOneWidget);
-  });
-
-  testWidgets('Form menolak nama dan deskripsi kosong', (tester) async {
-    await tester.pumpWidget(const MyApp());
-
-    await tester.ensureVisible(find.text('Tambah Proyek'));
-    await tester.tap(find.text('Tambah Proyek'));
-    await tester.pumpAndSettle();
-
+    // Tunggu SnackBar dari kartu menu selesai.
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Save'));
+    final loginButton = find.widgetWithText(ElevatedButton, 'Login');
+    await tester.ensureVisible(loginButton);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Save'));
+    await tester.tap(loginButton);
     await tester.pumpAndSettle();
 
-    expect(find.text('Nama proyek tidak boleh kosong!'), findsOneWidget);
-    expect(find.text('Deskripsi proyek tidak boleh kosong!'), findsOneWidget);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('Username tidak boleh kosong!'), findsOneWidget);
+    expect(find.text('Password tidak boleh kosong!'), findsOneWidget);
   });
 
-  testWidgets('Form menampilkan input dan mereset setelah OK', (tester) async {
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Logout tanpa sesi menampilkan pesan', (tester) async {
+    await tester.pumpWidget(buildTestApp(api));
 
-    await tester.ensureVisible(find.text('Tambah Proyek'));
-    await tester.tap(find.text('Tambah Proyek'));
-    await tester.pumpAndSettle();
+    await tapText(tester, 'Logout');
 
-    final fields = find.byType(TextFormField);
+    expect(find.text('Kamu belum login.'), findsOneWidget);
+  });
 
-    await tester.enterText(fields.at(0), 'Portofolio Nadya');
-    await tester.enterText(fields.at(1), 'Aplikasi portofolio pribadi.');
-    await tester.enterText(fields.at(2), 'Flutter, Django');
-    await tester.enterText(fields.at(3), 'https://example.com');
+  test('Login menyimpan token dan logout mencabutnya', () async {
+    final requests = <http.Request>[];
 
-    final category = find.byType(DropdownButtonFormField<String>);
-    await tester.ensureVisible(category);
-    await tester.tap(category);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Mobile Development').last);
-    await tester.pumpAndSettle();
+    final authApi = ApiClient(
+      client: MockClient((request) async {
+        requests.add(request);
 
-    await tester.pump(const Duration(seconds: 5));
-    await tester.pumpAndSettle();
+        if (request.url.path == '/api/v1/auth/token/') {
+          expect(request.method, 'POST');
+          expect(jsonDecode(request.body), {
+            'username': 'akun-test',
+            'password': 'password-test',
+          });
+          return http.Response('{"token":"token-test"}', 200);
+        }
 
-    await tester.ensureVisible(find.text('Save'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Save'));
-    await tester.pumpAndSettle();
+        if (request.url.path == '/api/v1/auth/logout/') {
+          expect(request.method, 'POST');
+          expect(request.headers['Authorization'], 'Token token-test');
+          return http.Response('', 204);
+        }
 
-    expect(find.byType(AlertDialog), findsOneWidget);
-    expect(find.text('Nama Proyek: Portofolio Nadya'), findsOneWidget);
-    expect(
-      find.text('Deskripsi: Aplikasi portofolio pribadi.'),
-      findsOneWidget,
+        return http.Response('{}', 404);
+      }),
     );
-    expect(find.text('Kategori: Mobile Development'), findsOneWidget);
-    expect(find.text('Teknologi: Flutter, Django'), findsOneWidget);
-    expect(find.text('Tautan: https://example.com'), findsOneWidget);
 
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
+    final auth = AuthState(authApi);
+    addTearDown(authApi.close);
+    addTearDown(auth.dispose);
 
-    expect(find.byType(AlertDialog), findsNothing);
+    await auth.login('akun-test', 'password-test');
 
-    for (final field in tester.widgetList<EditableText>(
-      find.byType(EditableText),
-    )) {
-      expect(field.controller.text, isEmpty);
-    }
+    expect(auth.isLoggedIn, isTrue);
+    expect(auth.token, 'token-test');
 
-    final dropdownState = tester.state<FormFieldState<String>>(category);
-    expect(dropdownState.value, 'Web Development');
+    await auth.logout();
+
+    expect(auth.isLoggedIn, isFalse);
+    expect(auth.token, isNull);
+    expect(requests.length, 2);
+  });
+
+  test('POST Experience mengirim token dan field yang bisa ditulis', () async {
+    final createApi = ApiClient(
+      client: MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/api/v1/experiences/');
+        expect(request.headers['Authorization'], 'Token token-test');
+
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+
+        expect(body['title'], 'Mentor Fasilkom');
+        expect(body['category'], 'volunteer');
+        expect(body.containsKey('id'), isFalse);
+        expect(body.containsKey('star_count'), isFalse);
+        expect(body.containsKey('is_starred'), isFalse);
+
+        return http.Response(jsonEncode(sampleExperience), 201);
+      }),
+    );
+    addTearDown(createApi.close);
+
+    final saved = await createApi.createExperience(
+      const Experience(
+        title: 'Mentor Fasilkom',
+        description: 'Mendampingi peserta kegiatan.',
+        category: 'volunteer',
+        startedAt: '2026-01-01',
+      ),
+      token: 'token-test',
+    );
+
+    expect(saved.id, 'test-experience');
+    expect(saved.title, 'Mentor Fasilkom');
   });
 }
