@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
-import 'package:myportofolio_mobile/screens/project_form.dart';
+import 'package:myportofolio_mobile/screens/education_form.dart';
+import 'package:myportofolio_mobile/screens/experience_list_screen.dart';
+import 'package:myportofolio_mobile/screens/experience_form.dart';
+import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 
 class ItemCard extends StatelessWidget {
   final ItemHomepage item;
@@ -14,7 +17,16 @@ class ItemCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
+        onTap: () async {
+          if (item.name == 'Lihat Experience') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ExperienceListScreen(),
+              ),
+            );
+            return;
+          }
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
@@ -22,10 +34,22 @@ class ItemCard extends StatelessWidget {
                 content: Text('Kamu telah menekan tombol ${item.name}!'),
               ),
             );
-          if (item.name == 'Tambah Proyek') {
+          if (item.name == 'Tambah Experience') {
+            final loggedIn = await ensureLoggedIn(context);
+            if (!context.mounted || !loggedIn) return;
+
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ProjectFormPage()),
+              MaterialPageRoute(
+                builder: (context) => const ExperienceFormPage(),
+              ),
+            );
+          } else if (item.name == 'Tambah Education') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const EducationFormPage(),
+              ),
             );
           }
         },

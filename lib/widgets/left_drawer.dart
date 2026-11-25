@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:myportofolio_mobile/screens/menu.dart';
-import 'package:myportofolio_mobile/screens/project_form.dart';
 import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_list_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:myportofolio_mobile/services/auth_state.dart';
 import 'package:myportofolio_mobile/screens/login_screen.dart';
+import 'package:myportofolio_mobile/screens/experience_form.dart';
+import 'package:myportofolio_mobile/widgets/auth_guard.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -68,13 +69,18 @@ class LeftDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.add_circle_outline),
-            title: const Text('Add Project'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushReplacement(
-                context,
+            title: const Text('Add Experience'),
+            onTap: () async {
+              final navigator = Navigator.of(context);
+
+              final loggedIn = await ensureLoggedIn(context);
+              if (!context.mounted || !loggedIn) return;
+
+              navigator.pop();
+
+              await navigator.push(
                 MaterialPageRoute(
-                  builder: (context) => const ProjectFormPage(),
+                  builder: (context) => const ExperienceFormPage(),
                 ),
               );
             },
