@@ -4,6 +4,8 @@ import 'package:myportofolio_mobile/screens/education_form.dart';
 import 'package:myportofolio_mobile/screens/experience_list_screen.dart';
 import 'package:myportofolio_mobile/screens/experience_form.dart';
 import 'package:myportofolio_mobile/widgets/auth_guard.dart';
+import 'package:provider/provider.dart';
+import 'package:myportofolio_mobile/services/auth_state.dart';
 
 class ItemCard extends StatelessWidget {
   final ItemHomepage item;
@@ -18,6 +20,37 @@ class ItemCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () async {
+          if (item.name == 'Logout') {
+            final auth = context.read<AuthState>();
+            final messenger = ScaffoldMessenger.of(context);
+
+            if (!auth.isLoggedIn) {
+              messenger
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  const SnackBar(content: Text('Kamu belum login.')),
+                );
+              return;
+            }
+
+            var message = 'Berhasil logout.';
+
+            try {
+              await auth.logout();
+            } catch (_) {
+              message =
+                  'Kamu sudah keluar dari aplikasi, '
+                  'tetapi pencabutan token di server gagal.';
+            }
+
+            if (!messenger.mounted) return;
+
+            messenger
+              ..hideCurrentSnackBar()
+              ..showSnackBar(SnackBar(content: Text(message)));
+
+            return;
+          }
           if (item.name == 'Lihat Experience') {
             Navigator.push(
               context,
